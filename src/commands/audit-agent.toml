@@ -1,0 +1,97 @@
+# /audit-agent - Full Agent Audit Command
+# Analyzes an entire agent specification against domain best practices
+
+[command]
+name = "audit-agent"
+description = "Audit an agent specification against industry best practices"
+skill = "reviewer"
+
+[parameters]
+package_path = { type = "string", required = true, description = "Path to the agent package (e.g., ./projects/mark-method)" }
+agent_name = { type = "string", required = true, description = "Name of the agent to audit (e.g., critic, pmm)" }
+depth = { type = "string", required = false, default = "standard", enum = ["standard", "deep"], description = "Research depth: standard (10-15 sources) or deep (20+ sources)" }
+
+[workflow]
+steps = [
+    "discovery",
+    "research",
+    "validate_sources",
+    "analyze",
+    "score",
+    "synthesize",
+    "report"
+]
+
+[workflow.discovery]
+description = "Gather information about the agent to audit"
+actions = [
+    "Read the agent SKILL.md file from {package_path}/src/skills/{agent_name}/",
+    "Identify the domain(s) the agent operates in",
+    "Note all workflows defined in the agent",
+    "Extract key practices and principles already present"
+]
+
+[workflow.research]
+description = "Research authoritative best practices for the domain"
+actions = [
+    "Construct 5-10 search queries for the domain",
+    "Execute WebSearch for each query",
+    "Prioritize Tier 1 and Tier 2 sources",
+    "If depth=deep, include Tier 3 academic sources",
+    "Retrieve full content from top sources using WebFetch"
+]
+
+[workflow.validate_sources]
+description = "Validate credibility of gathered sources"
+actions = [
+    "Check authorship credibility for each source",
+    "Verify recency (prioritize last 2-3 years)",
+    "Look for corroboration across sources",
+    "Assess potential bias",
+    "Rank sources by credibility tier"
+]
+
+[workflow.analyze]
+description = "Compare agent specification against best practices"
+actions = [
+    "Map each best practice to agent specification",
+    "Identify gaps where practices are missing",
+    "Identify areas where agent exceeds typical practices",
+    "Note outdated or non-standard approaches",
+    "Document specific locations in specification"
+]
+
+[workflow.score]
+description = "Apply scoring rubric to generate scores"
+actions = [
+    "Score Completeness (25% weight)",
+    "Score Accuracy (25% weight)",
+    "Score Depth (20% weight)",
+    "Score Currency (15% weight)",
+    "Score Structure (15% weight)",
+    "Calculate weighted overall score"
+]
+
+[workflow.synthesize]
+description = "Generate actionable improvements"
+actions = [
+    "Prioritize gaps by impact (HIGH/MEDIUM/LOW)",
+    "For each gap, generate specific fix recommendation",
+    "Include what, why, and how for each improvement",
+    "Create improvement roadmap"
+]
+
+[workflow.report]
+description = "Generate the audit report"
+actions = [
+    "Use the Agent Audit Report template",
+    "Include all sources consulted",
+    "Include category scores and overall score",
+    "Include gap analysis with recommendations",
+    "Include validation attestation"
+]
+
+[output]
+format = "markdown"
+filename = "audit-{agent_name}-{date}.md"
+directory = "{reports_path}/agents/"

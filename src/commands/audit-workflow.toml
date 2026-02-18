@@ -1,0 +1,110 @@
+# /audit-workflow - Workflow Deep-Dive Command
+# Analyzes a single workflow within an agent for completeness and quality
+
+[command]
+name = "audit-workflow"
+description = "Deep-dive audit of a single workflow within an agent"
+skill = "reviewer"
+
+[parameters]
+package_path = { type = "string", required = true, description = "Path to the agent package" }
+agent_name = { type = "string", required = true, description = "Name of the agent containing the workflow" }
+workflow_name = { type = "string", required = true, description = "Name of the workflow to audit (e.g., /fact-check)" }
+depth = { type = "string", required = false, default = "standard", enum = ["standard", "deep"], description = "Research depth" }
+
+[workflow]
+steps = [
+    "discovery",
+    "extract_workflow",
+    "research",
+    "analyze_steps",
+    "analyze_template",
+    "analyze_gates",
+    "score",
+    "report"
+]
+
+[workflow.discovery]
+description = "Locate and load the workflow specification"
+actions = [
+    "Read the agent SKILL.md file",
+    "Extract the specific workflow section",
+    "Identify workflow purpose, inputs, outputs",
+    "Map current workflow steps"
+]
+
+[workflow.extract_workflow]
+description = "Parse workflow into analyzable components"
+actions = [
+    "List all steps in order",
+    "Extract input requirements",
+    "Extract output template",
+    "Identify validation/quality gates",
+    "Note decision points and branching"
+]
+
+[workflow.research]
+description = "Research best practices for this type of workflow"
+actions = [
+    "Identify the workflow category (e.g., fact-checking, content review, competitive analysis)",
+    "Search for industry standards for this workflow type",
+    "Find expert methodologies and frameworks",
+    "Look for process templates and checklists",
+    "Research common pitfalls and failure modes"
+]
+
+[workflow.analyze_steps]
+description = "Compare each step against best practices"
+actions = [
+    "For each step, assess completeness",
+    "Identify missing steps from best practices",
+    "Check step ordering against expert methodologies",
+    "Note unnecessary or redundant steps",
+    "Assess clarity and specificity of guidance"
+]
+
+[workflow.analyze_template]
+description = "Evaluate the output template quality"
+actions = [
+    "Check for all necessary output elements",
+    "Assess template clarity and usability",
+    "Compare against industry-standard templates",
+    "Identify missing fields or sections",
+    "Evaluate formatting and structure"
+]
+
+[workflow.analyze_gates]
+description = "Evaluate validation and quality checkpoints"
+actions = [
+    "Identify existing quality gates",
+    "Compare against best practice checkpoints",
+    "Note missing validation steps",
+    "Assess gate effectiveness",
+    "Check for feedback loops"
+]
+
+[workflow.score]
+description = "Score the workflow"
+actions = [
+    "Score step completeness",
+    "Score step accuracy/alignment",
+    "Score guidance depth",
+    "Score currency of approach",
+    "Score template and structure quality",
+    "Calculate overall score"
+]
+
+[workflow.report]
+description = "Generate workflow audit report"
+actions = [
+    "Use Workflow Audit Report template",
+    "Include step-by-step analysis",
+    "Document missing steps with implementation guidance",
+    "Include template analysis",
+    "Provide prioritized recommendations"
+]
+
+[output]
+format = "markdown"
+filename = "audit-{agent_name}-{workflow_name}-{date}.md"
+directory = "{reports_path}/workflows/"

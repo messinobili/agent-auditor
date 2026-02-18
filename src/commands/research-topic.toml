@@ -1,0 +1,80 @@
+# /research-topic - Pure Research Command
+# Gather best practices on a topic without auditing an existing agent
+
+[command]
+name = "research-topic"
+description = "Research best practices on a topic (no audit)"
+skill = "reviewer"
+
+[parameters]
+topic = { type = "string", required = true, description = "The topic to research" }
+focus_areas = { type = "array", required = false, description = "Specific focus areas within the topic" }
+depth = { type = "string", required = false, default = "standard", enum = ["standard", "deep"], description = "Research depth" }
+
+[workflow]
+steps = [
+    "scope",
+    "search",
+    "validate",
+    "synthesize",
+    "report"
+]
+
+[workflow.scope]
+description = "Define the research scope"
+actions = [
+    "Parse the topic into searchable components",
+    "Identify related domains and subtopics",
+    "Define what 'best practice' means for this domain",
+    "List specific questions to answer",
+    "Note any focus areas specified by user"
+]
+
+[workflow.search]
+description = "Execute comprehensive research"
+actions = [
+    "Construct query set for Tier 1 sources (industry standards)",
+    "Construct query set for Tier 2 sources (expert practitioners)",
+    "If depth=deep, construct queries for Tier 3 (academic)",
+    "Execute all searches using WebSearch",
+    "Retrieve key source content using WebFetch",
+    "Track source metadata (author, date, organization)"
+]
+
+[workflow.validate]
+description = "Validate source credibility"
+actions = [
+    "Assess each source against credibility checklist",
+    "Verify authorship and expertise",
+    "Check publication date and currency",
+    "Look for corroboration across sources",
+    "Flag any sources with potential bias",
+    "Assign credibility tier to each source"
+]
+
+[workflow.synthesize]
+description = "Synthesize findings into actionable knowledge"
+actions = [
+    "Extract frameworks and methodologies",
+    "Identify consensus best practices",
+    "Note conflicting opinions and when to use each",
+    "Identify emerging trends and future directions",
+    "Document common pitfalls and anti-patterns",
+    "Create application guidance for agent/workflow building"
+]
+
+[workflow.report]
+description = "Generate research brief"
+actions = [
+    "Use Research Brief template",
+    "List all sources by credibility tier",
+    "Document key frameworks with usage guidance",
+    "List best practices with source attribution",
+    "Include emerging trends section",
+    "Provide practical application guidance"
+]
+
+[output]
+format = "markdown"
+filename = "research-{topic}-{date}.md"
+directory = "{reports_path}/research/"

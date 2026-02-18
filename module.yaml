@@ -1,0 +1,56 @@
+code: "auditor"
+name: "Agent Auditor"
+description: "Meta-research agent that audits AI agent packages against industry best practices"
+version: "1.0.0"
+defaultSelected: true
+
+# Configuration prompts (in order)
+prompts:
+  platform:
+    type: "select"
+    message: "Which AI assistant are you using?"
+    options:
+      - label: "Claude Code"
+        value: "claude"
+      - label: "Gemini CLI"
+        value: "gemini"
+      - label: "Both"
+        value: "both"
+    default: "claude"
+
+  default_depth:
+    type: "select"
+    message: "What is your default research depth preference?"
+    options:
+      - label: "Standard (10-15 sources)"
+        value: "standard"
+      - label: "Deep-dive (20+ sources)"
+        value: "deep"
+    default: "standard"
+
+  reports_path:
+    type: "text"
+    message: "Where should audit reports be saved?"
+    default: "audits"
+
+# Directories to create
+directories:
+  - "{reports_path}/agents"
+  - "{reports_path}/workflows"
+  - "{reports_path}/research"
+
+# Files to generate
+files:
+  - source: "src/templates/CLAUDE.md.hbs"
+    destination: "CLAUDE.md"
+    condition: "platform == 'claude' || platform == 'both'"
+  - source: "src/templates/GEMINI.md.hbs"
+    destination: "GEMINI.md"
+    condition: "platform == 'gemini' || platform == 'both'"
+
+# Skills to copy
+skills:
+  source: "src/skills/"
+  destinations:
+    claude: ".claude/skills/auditor/"
+    gemini: ".gemini/skills/auditor/"

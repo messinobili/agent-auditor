@@ -1,0 +1,89 @@
+# Agent Auditor - Claude Code Configuration
+
+This project uses the Agent Auditor package to audit AI agent specifications against industry best practices.
+
+## Available Commands
+
+### /audit-agent
+Audit an entire agent specification against domain best practices.
+
+**Usage:**
+```
+/audit-agent [package-path] [agent-name]
+```
+
+**Parameters:**
+- `package-path`: Path to the agent package (e.g., `./projects/mark-method`)
+- `agent-name`: Name of the agent to audit (e.g., `critic`, `pmm`)
+- `depth` (optional): `standard` (10-15 sources) or `deep` (20+ sources)
+
+**Example:**
+```
+/audit-agent ./projects/mark-method critic
+```
+
+### /audit-workflow
+Deep-dive audit of a single workflow within an agent.
+
+**Usage:**
+```
+/audit-workflow [package-path] [agent-name] [workflow-name]
+```
+
+**Example:**
+```
+/audit-workflow ./projects/mark-method critic /fact-check
+```
+
+### /research-topic
+Gather best practices on a topic without auditing.
+
+**Usage:**
+```
+/research-topic "[topic]"
+```
+
+**Example:**
+```
+/research-topic "B2B product positioning frameworks"
+```
+
+## Output Location
+
+Reports are saved to: `{{reports_path}}/`
+
+```
+{{reports_path}}/
+├── agents/      # Full agent audit reports
+├── workflows/   # Workflow-specific deep dives
+└── research/    # Pure research briefs
+```
+
+## Research Depth
+
+- **Standard (default):** 10-15 sources from Tier 1-2 (industry standards, expert practitioners)
+- **Deep-dive:** 20+ sources including Tier 3 (academic/research)
+
+## Scoring Rubric
+
+| Category | Weight | Description |
+|----------|--------|-------------|
+| Completeness | 25% | Covers all essential domain aspects |
+| Accuracy | 25% | Aligned with established best practices |
+| Depth | 20% | Specific, actionable guidance |
+| Currency | 15% | Reflects current/emerging practices |
+| Structure | 15% | Well-organized with good templates |
+
+### Score Interpretation
+
+- **90-100:** World-class
+- **80-89:** Strong
+- **70-79:** Good
+- **60-69:** Adequate
+- **Below 60:** Needs work
+
+## Skills
+
+Skills are located in: `.claude/skills/auditor/`
+
+- **Reviewer:** Research & Quality Analyst agent for auditing agent packages
