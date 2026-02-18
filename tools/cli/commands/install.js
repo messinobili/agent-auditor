@@ -242,7 +242,7 @@ async function generateContextFiles(config) {
       const claudeMdPath = 'CLAUDE.md';
       if (await fs.pathExists(claudeMdPath)) {
         const existing = await fs.readFile(claudeMdPath, 'utf-8');
-        if (!existing.includes('Agent Auditor')) {
+        if (!existing.includes('<!-- BEGIN AGENT AUDITOR -->')) {
           await fs.appendFile(claudeMdPath, '\n\n' + template);
         }
       } else {
@@ -262,7 +262,7 @@ async function generateContextFiles(config) {
       const geminiMdPath = 'GEMINI.md';
       if (await fs.pathExists(geminiMdPath)) {
         const existing = await fs.readFile(geminiMdPath, 'utf-8');
-        if (!existing.includes('Agent Auditor')) {
+        if (!existing.includes('<!-- BEGIN AGENT AUDITOR -->')) {
           await fs.appendFile(geminiMdPath, '\n\n' + template);
         }
       } else {

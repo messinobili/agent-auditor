@@ -76,6 +76,14 @@ export async function uninstall(options) {
       }
     }
 
+    // Remove Agent Auditor sections from context files
+    if (config.platform === 'claude' || config.platform === 'both') {
+      await removeAuditorSection('CLAUDE.md');
+    }
+    if (config.platform === 'gemini' || config.platform === 'both') {
+      await removeAuditorSection('GEMINI.md');
+    }
+
     // Remove config file
     await fs.remove('.auditor-config.yaml');
 
@@ -91,4 +99,43 @@ export async function uninstall(options) {
   console.log(chalk.green('Agent Auditor has been uninstalled.'));
   console.log(chalk.dim(`Your audit reports in ${config.reports_path}/ have been preserved.`));
   console.log('');
+}
+
+/**
+ * Remove the Agent Auditor section from a context file.
+ * If the file contains only the Auditor section, delete it entirely.
+ * If the file contains other content, strip only the Auditor section.
+ */
+async function removeAuditorSection(filePath) {
+  if (!await fs.pathExists(filePath)) return;
+
+  const content = await fs.readFile(filePath, 'utf-8');
+  const beginMarker = '<!-- BEGIN AGENT AUDITOR -->';
+  const endMarker = '<!-- END AGENT AUDITOR -->';
+
+  const beginIndex = content.indexOf(beginMarker);
+  const endIndex = content.indexOf(endMarker);
+
+  if (beginIndex === -1) {
+    // No markers found — check for legacy installs (pre-marker)
+    if (content.includes('Agent Auditor')) {
+      if (content.trimStart().startsWith('# Agent Auditor')) {
+        await fs.remove(filePath);
+      }
+    }
+    return;
+  }
+
+  const before = content.substring(0, beginIndex);
+  const after = endIndex !== -1
+    ? content.substring(endIndex + endMarker.length)
+    : '';
+
+  const remaining = (before + after).replace(/\n{3,}/g, '\n\n').trim();
+
+  if (remaining.length === 0) {
+    await fs.remove(filePath);
+  } else {
+    await fs.writeFile(filePath, remaining + '\n');
+  }
 }
