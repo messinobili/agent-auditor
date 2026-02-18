@@ -1,0 +1,29 @@
+# Development files
+.git/
+.github/
+.gitignore
+
+# Documentation not needed in package
+docs/
+
+# Test files
+tests/
+*.test.js
+coverage/
+
+# Editor/IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# User-generated output (should already be excluded)
+audits/
