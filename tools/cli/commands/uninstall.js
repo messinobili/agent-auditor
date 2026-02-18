@@ -7,7 +7,12 @@
 import { confirm, isCancel, outro, spinner } from '@clack/prompts';
 import chalk from 'chalk';
 import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import yaml from 'yaml';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function uninstall(options) {
   console.log(chalk.cyan.bold('\nAgent Auditor Uninstall\n'));
@@ -28,9 +33,17 @@ export async function uninstall(options) {
     console.log('  - .claude/skills/auditor/');
   }
   if (config.platform === 'gemini' || config.platform === 'both') {
-    console.log('  - .gemini/skills/reviewer/');
-    console.log('  - .gemini/commands/audit-*.toml');
-    console.log('  - .gemini/commands/research-*.toml');
+    const manifest = config.installed_files || [];
+    const geminiManifest = manifest.filter(p => p.startsWith('.gemini/'));
+    if (geminiManifest.length > 0) {
+      for (const filePath of geminiManifest) {
+        console.log(`  - ${filePath}`);
+      }
+    } else {
+      console.log('  - .gemini/skills/reviewer/');
+      console.log('  - .gemini/commands/audit-*.toml');
+      console.log('  - .gemini/commands/research-*.toml');
+    }
   }
   console.log('  - .auditor-config.yaml');
   console.log('');
@@ -61,17 +74,39 @@ export async function uninstall(options) {
 
     // Remove Gemini skills and commands
     if (config.platform === 'gemini' || config.platform === 'both') {
-      await fs.remove('.gemini/skills/reviewer');
+      const manifest = config.installed_files || [];
+      const geminiManifest = manifest.filter(p => p.startsWith('.gemini/'));
 
-      // Remove specific command files
-      const commandFiles = [
-        '.gemini/commands/audit-agent.toml',
-        '.gemini/commands/audit-workflow.toml',
-        '.gemini/commands/research-topic.toml'
-      ];
-      for (const file of commandFiles) {
-        if (await fs.pathExists(file)) {
-          await fs.remove(file);
+      if (geminiManifest.length > 0) {
+        // Manifest-based removal — only remove files we installed
+        for (const filePath of geminiManifest) {
+          await fs.remove(filePath);
+        }
+      } else {
+        // Legacy fallback for pre-manifest installs
+        await fs.remove('.gemini/skills/reviewer');
+        await fs.remove('.gemini/skills/reviewer-agent-auditor');
+
+        const packageRoot = path.resolve(__dirname, '../../../');
+        const commandsSource = path.join(packageRoot, 'src/commands');
+        if (await fs.pathExists(commandsSource) && await fs.pathExists('.gemini/commands')) {
+          const sourceCommands = await fs.readdir(commandsSource);
+          for (const cmd of sourceCommands) {
+            const ext = path.extname(cmd);
+            const baseName = path.basename(cmd, ext);
+            await fs.remove(`.gemini/commands/${cmd}`);
+            await fs.remove(`.gemini/commands/${baseName}-agent-auditor${ext}`);
+          }
+        }
+      }
+
+      // Clean up empty .gemini subdirectories
+      for (const subdir of ['.gemini/skills', '.gemini/commands']) {
+        if (await fs.pathExists(subdir)) {
+          const remaining = await fs.readdir(subdir);
+          if (remaining.filter(f => !f.startsWith('.')).length === 0) {
+            await fs.remove(subdir);
+          }
         }
       }
     }

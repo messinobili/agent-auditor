@@ -71,8 +71,15 @@ export async function install(options) {
     s.stop(chalk.green('✓') + ' Directories created');
 
     s.start('Installing Reviewer agent...');
-    await copySkills(config);
+    const installResult = await copySkillsSafe(config);
+    config.installed_files = installResult.manifest;
     s.stop(chalk.green('✓') + ' Reviewer agent installed');
+    if (installResult.suffixed.length > 0) {
+      console.log(chalk.yellow(`  ${installResult.suffixed.length} existing file(s) preserved — package versions installed with suffix:`));
+      for (const item of installResult.suffixed) {
+        console.log(chalk.dim(`    ${item.original} → ${item.suffixed}`));
+      }
+    }
 
     s.start('Generating context files...');
     await generateContextFiles(config);
@@ -195,32 +202,83 @@ async function createDirectories(config) {
   }
 }
 
-async function copySkills(config) {
-  // Get package root (3 levels up from commands directory)
+async function copySkillsSafe(config) {
   const packageRoot = path.resolve(__dirname, '../../../');
   const skillsSource = path.join(packageRoot, 'src/skills');
   const commandsSource = path.join(packageRoot, 'src/commands');
+  const suffix = 'agent-auditor';
 
-  // Check if skills source exists
   if (!await fs.pathExists(skillsSource)) {
     throw new Error(`Skills source not found at ${skillsSource}`);
   }
 
-  // Copy to appropriate directories
+  // Load manifest from previous install (if reinstalling)
+  const previousManifest = config.installed_files || [];
+  const newManifest = [];
+  const suffixedItems = [];
+
+  // Copy a source item to the right destination, respecting existing files
+  async function copyWithCollisionCheck(srcPath, destPath, suffixedPath) {
+    const destExists = await fs.pathExists(destPath);
+    const ownedByUs = previousManifest.includes(destPath);
+
+    if (!destExists) {
+      // No conflict — install normally
+      await fs.copy(srcPath, destPath);
+      newManifest.push(destPath);
+    } else if (ownedByUs) {
+      // We installed this previously — safe to update
+      await fs.copy(srcPath, destPath);
+      newManifest.push(destPath);
+    } else {
+      // Existing file/dir NOT ours — install with suffix to coexist
+      await fs.copy(srcPath, suffixedPath);
+      newManifest.push(suffixedPath);
+      suffixedItems.push({ original: destPath, suffixed: suffixedPath });
+    }
+  }
+
+  // --- Skills (directories) ---
+  const skillEntries = await fs.readdir(skillsSource);
+
   if (config.platform === 'claude' || config.platform === 'both') {
-    // Claude Code: skills go in .claude/skills/auditor/
-    await fs.copy(skillsSource, '.claude/skills/auditor');
+    for (const entry of skillEntries) {
+      const srcPath = path.join(skillsSource, entry);
+      if (!(await fs.stat(srcPath)).isDirectory()) continue;
+
+      const destPath = `.claude/skills/auditor/${entry}`;
+      const suffixedPath = `.claude/skills/auditor/${entry}-${suffix}`;
+      await copyWithCollisionCheck(srcPath, destPath, suffixedPath);
+    }
   }
 
   if (config.platform === 'gemini' || config.platform === 'both') {
-    // Gemini CLI: skills go directly in .gemini/skills/
-    await fs.copy(skillsSource, '.gemini/skills');
+    for (const entry of skillEntries) {
+      const srcPath = path.join(skillsSource, entry);
+      if (!(await fs.stat(srcPath)).isDirectory()) continue;
 
-    // Gemini CLI: also copy command files
+      const destPath = `.gemini/skills/${entry}`;
+      const suffixedPath = `.gemini/skills/${entry}-${suffix}`;
+      await copyWithCollisionCheck(srcPath, destPath, suffixedPath);
+    }
+
+    // --- Commands (files) ---
     if (await fs.pathExists(commandsSource)) {
-      await fs.copy(commandsSource, '.gemini/commands');
+      const commandEntries = await fs.readdir(commandsSource);
+      for (const entry of commandEntries) {
+        const srcPath = path.join(commandsSource, entry);
+        if (!(await fs.stat(srcPath)).isFile()) continue;
+
+        const ext = path.extname(entry);
+        const baseName = path.basename(entry, ext);
+        const destPath = `.gemini/commands/${entry}`;
+        const suffixedPath = `.gemini/commands/${baseName}-${suffix}${ext}`;
+        await copyWithCollisionCheck(srcPath, destPath, suffixedPath);
+      }
     }
   }
+
+  return { manifest: newManifest, suffixed: suffixedItems };
 }
 
 async function generateContextFiles(config) {
