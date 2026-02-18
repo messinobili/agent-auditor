@@ -124,7 +124,13 @@ The Reviewer validates sources using a credibility hierarchy:
 
 ## Output
 
-Audit reports are saved to your configured reports path (default: `audits/`):
+Audit reports are created at your configured reports path (default: `audits/`).
+
+**How file creation works:**
+1. The Reviewer agent generates the report and displays it for your review
+2. The agent asks: "Ready to save?" before creating any files
+3. Upon confirmation, the file is created at the specified path
+4. The agent confirms the file location
 
 ```
 audits/

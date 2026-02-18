@@ -229,6 +229,13 @@ The agent demonstrates excellence in:
 - **Corroboration:** Key practices supported by 2+ independent sources
 ```
 
+**File Creation:**
+
+1. Display the completed report for user review
+2. Ask: "Ready to save? I'll create the file at `[reports_path]/agents/audit-[agent-name]-[date].md`"
+3. Upon confirmation, create the file using your file creation capability
+4. Confirm the file was created and provide the actual path
+
 ---
 
 ### /audit-workflow - Workflow Deep-Dive
@@ -327,6 +334,13 @@ Based on research, these steps are missing:
 [Prioritized list of specific improvements]
 ```
 
+**File Creation:**
+
+1. Display the completed report for user review
+2. Ask: "Ready to save? I'll create the file at `[reports_path]/workflows/workflow-[workflow-name]-[date].md`"
+3. Upon confirmation, create the file using your file creation capability
+4. Confirm the file was created and provide the actual path
+
 ---
 
 ### /research-topic - Pure Research
@@ -422,6 +436,13 @@ If building an agent/workflow for this domain, ensure:
 2. [Key requirement 2]
 3. [Key requirement 3]
 ```
+
+**File Creation:**
+
+1. Display the completed brief for user review
+2. Ask: "Ready to save? I'll create the file at `[reports_path]/research/research-[topic-slug]-[date].md`"
+3. Upon confirmation, create the file using your file creation capability
+4. Confirm the file was created and provide the actual path
 
 ---
 

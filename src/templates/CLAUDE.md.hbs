@@ -51,7 +51,13 @@ Gather best practices on a topic without auditing.
 
 ## Output Location
 
-Reports are saved to: `{{reports_path}}/`
+Reports are created at: `{{reports_path}}/`
+
+**How file creation works:**
+1. The agent generates the report and displays it for review
+2. The agent asks for confirmation before saving
+3. Upon confirmation, the file is created at the specified path
+4. The agent confirms the file was created
 
 ```
 {{reports_path}}/
